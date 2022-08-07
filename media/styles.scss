@@ -1,0 +1,487 @@
+@import "../node_modules/dragula/dist/dragula.min.css";
+
+// GLOBALS
+$defaultColumnWidth: 350;
+$filter-offset: 52px;
+
+:root {
+    --dashboard-project-card-bg: var(--vscode-tab-inactiveBackground);
+    --dashboard-foreground: var(--vscode-editor-foreground);
+    --dashboard-path: var(--vscode-descriptionForeground);
+
+    --column-width: #{$defaultColumnWidth}px;
+}
+
+$useAddProjectOpacity: true;
+
+$projectListMinHeight: calc(var(--column-width) * #{163 / $defaultColumnWidth});
+$projectCardMinHeight: calc(var(--column-width) * #{96 / $defaultColumnWidth});
+
+$borderTopSize: 7px;
+$defaultPadding: 20px;
+$projectHeaderSize: 40px; // This has also be adjusted in constants.ts for fitty
+$projectHeaderMinHeight: 53px; // To be constant even with fitted font size
+$projectIconSize: 20px;
+$dataActionIconSize: 15.6px; // Default font size * 1.2em, in pixel to keep constant across different font sizes
+
+$defaultTransition: 150ms ease-in-out;
+$actionTransitionDelay: 250ms;
+
+// MIXINS
+@mixin actions($size: $dataActionIconSize, $spacing: $dataActionIconSize * 0.3) {
+    svg {
+        width: $size;
+        fill: var(--dashboard-foreground);
+        margin-right: $spacing;
+    }
+
+    :hover > svg {
+        filter: brightness(150%);
+    }
+
+    &[data-action],
+    [data-action] {
+        cursor: pointer;
+    }
+}
+
+body {
+    user-select: none;
+
+    // See https://stackoverflow.com/questions/14389566/stop-css-transition-from-firing-on-page-load
+    // Suggested fixes with css preload or <script> </script> do not work, as vscode injects javascript directly under <head>
+    &.preload {
+        &,
+        * {
+            transition: none !important;
+        }
+    }
+
+    &.dashboard-empty {
+        #tempGroup {
+            display: none;
+        }
+    }
+}
+
+// RULES
+.group {
+    margin-top: $defaultPadding * 0.5;
+    overflow: hidden;
+
+    &.collapsed {
+        .group-list {
+            height: 0 !important;
+            min-height: 0 !important;
+            margin-top: 0;
+        }
+
+        .collapse-icon svg {
+            transform: rotate(-90deg);
+        }
+    }
+
+    &#tempGroup {
+        .group-title {
+            transition: opacity $defaultTransition;
+            opacity: 0.5;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        svg {
+            width: 0.75em;
+            fill: var(--dashboard-foreground);
+        }
+    }
+
+    &:first-child {
+        margin-top: $defaultPadding / 2;
+    }
+
+    .group-title {
+        min-width: calc(var(--column-width) - 19px);
+        display: inline-block;
+        font-size: $projectHeaderSize / 2;
+        font-weight: 200;
+        margin-left: 0px;
+
+        > span {
+            cursor: pointer;
+        }
+
+        .collapse-icon {
+            @include actions(0.6em, 0);
+
+            padding-right: 2px;
+
+            svg {
+                transition: transform $defaultTransition;
+                margin-bottom: -2px;
+            }
+        }
+    }
+
+    .group-title-text {
+        margin-right: 2em;
+    }
+
+    .group-actions {
+        transition: opacity $defaultTransition $actionTransitionDelay;
+        opacity: 0;
+        pointer-events: none;
+
+        @include actions($dataActionIconSize - 1, 4px);
+
+        &.left {
+            display: inline;
+            padding-left: 0.5em;
+        }
+
+        &.right {
+            float: right;
+        }
+
+        // Custom spacing so that different icons look correctly aligned
+        [data-action="add"] svg {
+            margin-right: 2px;
+        }
+
+        :last-child svg {
+            margin-right: 6px;
+        }
+    }
+
+    .group-title:hover .group-actions {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    .group-list {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        position: relative;
+
+        padding-top: $defaultPadding / 2;
+        //min-height: $projectListMinHeight;
+    }
+
+    .drop-signal {
+        transition: opacity $defaultTransition;
+        pointer-events: none;
+        opacity: 0;
+        width: calc(var(--column-width) - 19px);
+        align-self: stretch;
+        background: var(--dashboard-project-card-bg);
+        margin-bottom: $defaultPadding;
+
+        position: absolute;
+        top: $defaultPadding / 2;
+        height: calc(100% - #{1.5 * $defaultPadding});
+
+        &:not(:only-of-type) {
+            display: none;
+        }
+    }
+}
+
+@if ($useAddProjectOpacity) {
+    .group:hover .add-project,
+    .group-title:hover + .group .add-project {
+        opacity: 0.6;
+    }
+}
+
+.project-container {
+    display: inline-block;
+    width: var(--column-width);
+
+    &.slim {
+        width: calc(var(--column-width) / 5);
+        min-width: 40px;
+    }
+}
+
+body .project {
+    cursor: pointer;
+
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    margin: 0 $defaultPadding $defaultPadding 0;
+    padding: $defaultPadding;
+    padding-top: $defaultPadding + $borderTopSize;
+
+    background: var(--dashboard-project-card-bg);
+
+    .project-border {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: $borderTopSize;
+        background: transparent;
+        z-index: 50;
+    }
+
+    .fitty-container {
+        max-width: 100%;
+        min-height: $projectHeaderMinHeight;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .project-header {
+        color: var(--dashboard-foreground);
+        margin: 0;
+        font-size: $projectHeaderSize;
+        font-weight: lighter;
+        text-align: center;
+    }
+
+    .add-project-header {
+        @extend .project-header;
+        font-size: 60px;
+        margin-top: -0.25em;
+    }
+
+    .project-path-info {
+        display: flex;
+        max-width: 100%;
+    }
+
+    .project-path {
+        color: var(--dashboard-path);
+
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        direction: rtl;
+    }
+
+    .project-icon {
+        svg {
+            width: $projectIconSize;
+            fill: var(--dashboard-path);
+        }
+
+        &.error-icon svg {
+            fill: var(--vscode-gitDecoration-deletedResourceForeground);
+        }
+    }
+
+    .git-icon {
+        @extend .project-icon;
+        margin: -2px 6px -4px 0;
+    }
+
+    .remote-icon {
+        @extend .project-icon;
+        margin: 0 6px -4px 0;
+    }
+
+    &.add-project,
+    &.no-projects {
+        height: $projectCardMinHeight;
+        background: none;
+        font-size: 1.5em;
+        opacity: if($useAddProjectOpacity, 0, 0.6);
+        transition: opacity $defaultTransition;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    &.no-projects {
+        opacity: 1;
+        text-align: center;
+    }
+
+    .project-actions-wrapper {
+        position: absolute;
+        right: 0;
+        top: 0;
+        padding-top: calc(0.6em + #{$borderTopSize});
+        overflow-y: hidden;
+    }
+
+    .project-actions {
+        margin-top: calc(-2em - #{$borderTopSize});
+        transition: margin-top $defaultTransition $actionTransitionDelay;
+
+        @include actions($dataActionIconSize);
+    }
+
+    &:hover .project-actions {
+        margin-top: 0;
+    }
+}
+
+// CONTEXT MENU
+.custom-context-menu {
+    position: absolute;
+    z-index: 100;
+    display: none;
+
+    // Values chosen to match vscode theme colors
+    padding: 11px 1px;
+    background: var(--vscode-menu-background);
+    color: var(--vscode-menu-foreground);
+    box-shadow: var(--vscode-widget-shadow) 0px 2px 3px;
+
+    &.visible {
+        display: block;
+    }
+
+    .custom-context-menu-item {
+        padding: 5px 26px;
+
+        &:hover {
+            color: var(--vscode-menu-selectionForeground);
+            background: var(--vscode-menu-selectionBackground);
+        }
+
+        &.disabled {
+            pointer-events: none;
+            opacity: 50%;
+        }
+    }
+
+    .custom-context-menu-separator {
+        border-top: 1pt solid var(--vscode-menu-separatorBackground);
+        opacity: 50%;
+        margin: 3px 10px;
+    }
+}
+
+// CUSTOM CONFIGURATION
+.hide-project-path .group {
+    .project {
+        padding: (1.5 * $defaultPadding) $defaultPadding;
+
+        .project-path-info {
+            display: none;
+        }
+
+        &.add-project {
+            height: calc(#{$projectCardMinHeight} - 1em - 24px);
+        }
+    }
+
+    .group-list {
+        min-height: calc(#{$projectListMinHeight} - 1em - 24px);
+    }
+}
+
+// DRAG & DROP
+.gu-mirror.project-container {
+    .project {
+        height: auto;
+    }
+
+    .project-actions-wrapper {
+        display: none;
+    }
+}
+
+.gu-mirror {
+    * {
+        cursor: grabbing !important;
+    }
+
+    .project-actions-wrapper,
+    .group-actions {
+        display: none !important;
+    }
+}
+
+.project-dragging .group {
+    .drop-signal {
+        opacity: 0.2;
+        pointer-events: all;
+        position: static;
+        height: auto;
+    }
+
+    .group-title {
+        opacity: 1;
+    }
+}
+
+.last {
+    order: 1000;
+}
+
+// FILTERING
+.filter-wrapper {
+    transition: top $defaultTransition;
+    top: -$filter-offset;
+    position: absolute;
+    width: calc(100% - #{2 * $defaultPadding});
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    padding-top: $defaultPadding;
+
+    .search-icon {
+        margin-left: $defaultPadding * (-2);
+        margin-right: -28px;
+        z-index: 5;
+        padding-top: 5px;
+
+        svg {
+            width: 14px;
+            fill: var(--dashboard-path);
+            opacity: 0.6;
+        }
+    }
+
+    input {
+        background: var(--dashboard-project-card-bg);
+        color: var(--dashboard-foreground);
+        width: calc(var(--column-width) - #{$defaultPadding});
+        outline-color: transparent;
+
+        padding: 4px 8px 4px 34px;
+
+        text-align: center;
+        font-family: var(--vscode-font-family);
+        font-size: 1.2em;
+        border: 1pt solid transparent;
+        border-radius: 20px;
+    }
+}
+
+body {
+    transition: padding-top $defaultTransition;
+    padding-top: 0;
+
+    &.no-initial-transition {
+        transition: none;
+
+        .filter-wrapper {
+            transition: none;
+        }
+    }
+
+    &.filtering-active {
+        padding-top: $filter-offset;
+        .filter-wrapper {
+            top: 0;
+        }
+
+        .filtered {
+            display: none !important;
+        }
+    }
+}
