@@ -114,6 +114,23 @@ export default class ProjectService extends BaseService {
         }
 
         await this.saveGroups(groups);
+		fetch('http://127.0.0.1:8080/project',{method: 'POST',
+         headers: {'Content-Type': 'application/json'},
+         body: JSON.stringify({name:project.name, jar_paths:project.path})}).then(res => res.json()).then(
+			json => {
+				vscode.window.showInformationMessage(JSON.stringify(json))
+			}
+		); 
+        
+        fetch('http://127.0.0.1:8080/project/current', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: project.name})
+        }).then(res => res.json()).then(
+            json => {
+                vscode.window.showInformationMessage(JSON.stringify(json))
+            }
+        );          
         return groups;
     }
 
@@ -177,6 +194,7 @@ export default class ProjectService extends BaseService {
         if (project == null) {
             return;
         }
+        
 
         const callgraph_path = vscode.extensions.getExtension('xylab.vscode-callgraph').extensionPath + '/server/start_callgraph.bat';
         const callgraph_command = callgraph_path;
@@ -197,15 +215,7 @@ export default class ProjectService extends BaseService {
             console.log(code===0?vscode.window.showInformationMessage('项目分析成功'):
             vscode.window.showInformationMessage('项目分析错误'));
         })
-/*
-		fetch('http://127.0.0.1:8080/project',{method: 'POST',
-         headers: {'Content-Type': 'application/json'},
-         body: JSON.stringify({name:project.name, jar_paths:project.path})}).then(res => res.json()).then(
-			json => {
-				vscode.window.showInformationMessage(JSON.stringify(json))
-			}
-		);
-*/
+
 		fetch('http://127.0.0.1:8080/project/analysis',{method: 'POST',
          headers: {'Content-Type': 'application/json'},
          body: JSON.stringify({name:project.name})}).then(res => res.json()).then(
@@ -214,6 +224,24 @@ export default class ProjectService extends BaseService {
 			}
 		);        
     }    
+
+    async setCurrentProject(projectId: string) {
+        var project = this.getProject(projectId);
+        if (project == null) {
+            return;
+        }
+        fetch('http://127.0.0.1:8080/project/current', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: project.name })
+        }).then(res => res.json()).then(
+            json => {
+                vscode.window.showInformationMessage(JSON.stringify(json))
+            }
+        );        
+    }       
+
+    
 
     async removeGroup(groupId: string, testIfEmpty: boolean = false): Promise<Group[]> {
         let groups = this.getGroups();

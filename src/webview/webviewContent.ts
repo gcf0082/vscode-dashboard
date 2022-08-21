@@ -192,7 +192,9 @@ function getProjectDiv(project: Project, infos: DashboardInfos) {
         <div class="project-border" style="${borderStyle}"></div>
         <div class="project-actions-wrapper">
             <div class="project-actions">
-            <span data-action="analysis" title="Edit Color">${Icons.analysis
+            <span data-action="analysis" title="Analysis Project">${Icons.analysis
+            }</span>              
+            <span data-action="setCurrent" title="Set Current Project">${Icons.current
             }</span>            
                 <span data-action="color" title="Edit Color">${Icons.palette
         }</span>

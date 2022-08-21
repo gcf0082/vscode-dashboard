@@ -210,7 +210,12 @@ export function activate(context: vscode.ExtensionContext) {
                     case 'analysis-project':
                         projectId = e.projectId as string;
                         await analysisProject(projectId);
-                        break;                        
+                        break;  
+                        break;
+                    case 'setCurrent-project':
+                        projectId = e.projectId as string;
+                        await setCurrentProject(projectId);
+                        break;                                               
                     case 'edit-project':
                         projectId = e.projectId as string;
                         await editProject(projectId);
@@ -972,7 +977,23 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         await projectService.analysisProject(projectId);
-    }    
+    }   
+    
+
+    async function setCurrentProject(projectId: string) {
+        var project = projectService.getProject(projectId);
+        if (project == null) {
+            return;
+        }
+
+        let accepted = await vscode.window.showWarningMessage(`set current project ${project.name}?`, { modal: true }, 'set current project');
+        if (!accepted) {
+            return;
+        }
+
+        await projectService.setCurrentProject(projectId);
+    }     
+    
 
     async function reorderGroups(groupOrders: GroupOrder[]) {
         var groups = projectService.getGroups();
