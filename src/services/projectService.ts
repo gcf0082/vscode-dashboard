@@ -118,7 +118,7 @@ export default class ProjectService extends BaseService {
          headers: {'Content-Type': 'application/json'},
          body: JSON.stringify({name:project.name, jar_paths:project.path})}).then(res => res.json()).then(
 			json => {
-				vscode.window.showInformationMessage(JSON.stringify(json))
+				console.log(JSON.stringify(json))
 			}
 		); 
         
@@ -128,9 +128,11 @@ export default class ProjectService extends BaseService {
             body: JSON.stringify({ name: project.name})
         }).then(res => res.json()).then(
             json => {
-                vscode.window.showInformationMessage(JSON.stringify(json))
+                //vscode.window.showInformationMessage(JSON.stringify(json))
+                console.log(JSON.stringify(json));
             }
-        );          
+        );   
+        vscode.window.showInformationMessage('添加项目成功')       
         return groups;
     }
 
@@ -195,7 +197,7 @@ export default class ProjectService extends BaseService {
             return;
         }
         
-
+/*
         const callgraph_path = vscode.extensions.getExtension('xylab.vscode-callgraph').extensionPath + '/server/start_callgraph.bat';
         const callgraph_command = callgraph_path;
         const cp_callgraph=exec(callgraph_command, (err,stdout,stderr) => {
@@ -205,22 +207,23 @@ export default class ProjectService extends BaseService {
             console.log(code===0?vscode.window.showInformationMessage('启动callgrap服务成功'):
             vscode.window.showInformationMessage('启动callgrap服务失败'));
         })        
-
+*/
         const java_decompiled_path = vscode.extensions.getExtension('xylab.decompiled').extensionPath + '/jd-cli-1.2.1/jd-cli.bat';
         const decompiled_command = java_decompiled_path + ' ' + project.path;
         const cp=exec(decompiled_command, (err,stdout,stderr) => {
             console.log(err||stdout||stderr);
         })
         cp.on("close",(code,singal)=>{
-            console.log(code===0?vscode.window.showInformationMessage('项目分析成功'):
-            vscode.window.showInformationMessage('项目分析错误'));
+            console.log(code===0?vscode.window.showInformationMessage('反编译完成'):
+            vscode.window.showInformationMessage('反编译失败'));
         })
 
 		fetch('http://127.0.0.1:8080/project/analysis',{method: 'POST',
          headers: {'Content-Type': 'application/json'},
          body: JSON.stringify({name:project.name})}).then(res => res.json()).then(
 			json => {
-				vscode.window.showInformationMessage(JSON.stringify(json))
+                 vscode.window.showInformationMessage('分析完成')
+				console.log(JSON.stringify(json))
 			}
 		);        
     }    

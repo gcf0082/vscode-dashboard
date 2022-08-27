@@ -557,7 +557,8 @@ export function activate(context: vscode.ExtensionContext) {
             }
 
             // Color
-            var color = isEditing ? projectTemplate.color : await queryProjectColor(isEditing, projectTemplate);
+            //var color = isEditing ? projectTemplate.color : await queryProjectColor(isEditing, projectTemplate);
+            var color = "var(--vscode-gitDecoration-ignoredResourceForeground)";
 
             //Test if Git Repo
             let isGitRepo = isFolderGitRepo(projectPath);
@@ -649,7 +650,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     async function queryProjectPath(defaultPath: string = null): Promise<string> {
-        let projectTypePicks = [
+        /*let projectTypePicks = [
             { id: 'dir', label: 'Folder Project' },
             { id: 'file', label: 'Workspace or File Project' },
             { id: 'ssh', label: `SSH Target ${!dashboardInfos.relevantExtensionsInstalls.remoteSSH ? '(Remote Development extension is not installed)' : ''}` },
@@ -676,7 +677,8 @@ export function activate(context: vscode.ExtensionContext) {
                 return await getSSHPath(defaultPath);
             default:
                 throw new Error(USER_CANCELED);
-        }
+        }*/
+        return await getPathFromPicker(true, defaultPath);
     }
 
     async function getPathFromPicker(folderProject: boolean, defaultPath: string = null): Promise<string> {

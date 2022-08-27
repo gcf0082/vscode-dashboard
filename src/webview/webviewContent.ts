@@ -196,10 +196,6 @@ function getProjectDiv(project: Project, infos: DashboardInfos) {
             }</span>              
             <span data-action="setCurrent" title="Set Current Project">${Icons.current
             }</span>            
-                <span data-action="color" title="Edit Color">${Icons.palette
-        }</span>
-                <span data-action="edit" title="Edit Project">${Icons.edit
-        }</span>
                 <span data-action="remove" title="Remove Project">${Icons.remove
         }</span>
             </div>
